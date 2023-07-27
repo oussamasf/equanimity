@@ -1,0 +1,17 @@
+version: "3.5"
+
+services:
+  app:
+    container_name: ws1
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
+    restart: always
+    ports:
+      - 3000:3000
+    networks:
+      - nesjs-network
+
+networks:
+    nesjs-network:
+      driver: bridge

@@ -1,0 +1,8 @@
+/data
+/node_modules
+**.spec.js
+**.test.js
+/dist 
+/.vscode
+/bash
+/test
