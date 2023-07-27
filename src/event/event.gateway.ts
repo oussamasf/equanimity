@@ -16,6 +16,7 @@ export class EventGateway implements OnModuleInit {
   constructor(private readonly eventService: EventService) {}
 
   onModuleInit() {
+    this.eventService.subscribe();
     this.server.on('connection', (socket) => {
       console.log(socket.id);
     });
@@ -23,9 +24,12 @@ export class EventGateway implements OnModuleInit {
 
   @SubscribeMessage('room')
   handleMessage(@MessageBody() body: any) {
-    console.log(body);
-    this.server.emit('ghost', {
-      body,
+    this.eventService.publish(body);
+    this.eventService.subscriber.on('message', (channel, message) => {
+      console.log(`Received ${message} from ${channel}`);
+      this.server.emit('ghost', {
+        body: message,
+      });
     });
   }
 }

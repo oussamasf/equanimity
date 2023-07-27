@@ -23,6 +23,12 @@ services:
     networks:
       - ws-network
 
+  pubsub:
+    image: redis
+    ports:
+      - 6379:6379
+
+
 networks:
     ws-network:
       driver: bridge
