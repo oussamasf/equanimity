@@ -1,35 +1,36 @@
+import { Logger } from '@nestjs/common';
 import {
-  WebSocketGateway,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
-  MessageBody,
+  WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { EventService } from './event.service';
-import { OnModuleInit } from '@nestjs/common';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway()
-export class EventGateway implements OnModuleInit {
-  @WebSocketServer()
-  server: Server;
+@WebSocketGateway({ cors: true })
+export class EventGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
+  private logger: Logger = new Logger('MessageGateway');
 
-  constructor(private readonly eventService: EventService) {}
+  @WebSocketServer() wss: Server;
 
-  onModuleInit() {
-    this.eventService.subscribe();
-    this.server.on('connection', (socket) => {
-      console.log(socket.id);
-    });
+  afterInit(server: Server) {
+    this.logger.log('Initialized');
   }
 
-  @SubscribeMessage('room')
-  handleMessage(@MessageBody() body: any) {
-    this.eventService.publish(body);
-    this.eventService.subscriber.on('message', (channel, message) => {
-      console.log(`Received ${message} from ${channel}`);
-      this.server.emit('ghost', {
-        body: message,
-      });
-    });
+  handleDisconnect(client: Socket) {
+    this.logger.log(`Client Disconnected: ${client.id}`);
+  }
+
+  handleConnection(client: Socket, ...args: any[]) {
+    this.logger.log(`Client Connected: ${client.id}`);
+  }
+
+  @SubscribeMessage('sendMessage')
+  async handleSendMessage(client: Socket, payload: string): Promise<void> {
+    client.broadcast.emit('receiveMessage', payload);
   }
 }
