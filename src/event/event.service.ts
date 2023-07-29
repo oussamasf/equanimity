@@ -7,8 +7,10 @@ export class EventService {
   public subscriber: Redis;
 
   constructor() {
-    this.publisher = new Redis(6379, 'pubsub'); // 192.168.1.1:6379
-    this.subscriber = new Redis(6379, 'pubsub'); // 192.168.1.1:6379
+    // TODO change host to be env var
+    const PORT = parseInt(process.env.REDIS_PORT);
+    this.publisher = new Redis(PORT, process.env.REDIS_HOST); //6379, 'pubsub'
+    this.subscriber = new Redis(PORT, process.env.REDIS_HOST); //
   }
 
   publish(message: string): void {

@@ -1,35 +1,47 @@
+import { Logger } from '@nestjs/common';
 import {
-  WebSocketGateway,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
-  MessageBody,
+  WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 import { EventService } from './event.service';
-import { OnModuleInit } from '@nestjs/common';
-import { Server } from 'socket.io';
 
-@WebSocketGateway()
-export class EventGateway implements OnModuleInit {
-  @WebSocketServer()
-  server: Server;
+@WebSocketGateway({ cors: true })
+export class EventGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
+  private logger: Logger = new Logger('MessageGateway');
+  @WebSocketServer() wss: Server;
 
-  constructor(private readonly eventService: EventService) {}
+  constructor(private readonly eventService: EventService) {
+    this.eventService.subscriber.on('message', (channel, message) => {
+      this.logger.log(`${message} from publisher to subscriber`);
+      this.wss.emit('receiveMessage', message);
+    });
+  }
 
-  onModuleInit() {
+  afterInit() {
+    this.logger.log('Initialized');
     this.eventService.subscribe();
-    this.server.on('connection', (socket) => {
+    this.wss.on('connection', (socket) => {
       console.log(socket.id);
     });
   }
 
-  @SubscribeMessage('room')
-  handleMessage(@MessageBody() body: any) {
-    this.eventService.publish(body);
-    this.eventService.subscriber.on('message', (channel, message) => {
-      console.log(`Received ${message} from ${channel}`);
-      this.server.emit('ghost', {
-        body: message,
-      });
-    });
+  handleDisconnect(client: Socket) {
+    this.logger.log(`Client Disconnected: ${client.id}`);
+  }
+
+  handleConnection(client: Socket) {
+    this.logger.log(`Client Connected: ${client.id}`);
+  }
+
+  @SubscribeMessage('sendMessage')
+  handleSendMessage(client: Socket, payload: string): void {
+    this.eventService.publish(`message from wss to publisher ${payload}`);
   }
 }
