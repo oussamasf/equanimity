@@ -27,6 +27,7 @@ ensure you have the following prerequisites installed on your system:
 
 then create .env file "check the example" then run the following commend :
 `docker compose -f "docker-compose.yml" up -d --build`
+
 use postman to test endpoints : [Postman workspace](https://www.postman.com/interstellar-star-467931/workspace/web-socket-cluster/overview). 
 ## Contributing
 
