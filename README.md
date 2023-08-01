@@ -30,6 +30,6 @@ then create .env file "check the example" then run the following commend :
 
 ## Contributing
 
-I welcome and i **need** your contributions to my project! If you find any issues or have suggestions for improvement, please feel free to submit a pull request or open an issue in the GitHub repository.
+I welcome and i **need** your contributions to my project! If you find any issue or have suggestions for improvement, please feel free to submit a pull request or open an issue in the GitHub repository.
 
 ## TODO
